@@ -99,37 +99,22 @@ def get_pie_chart(entered_site):
               Input(component_id='site-dropdown', component_property='value'),
               Input(component_id='payload-slider', component_property='value'))
 
-def get_scatter_chart(entered_site):
+def get_scatter_chart(entered_site,slider_range):
+    low, high = slider_range
     if entered_site == 'ALL':
-        new_df = spacex_df[spacex_df['class'] == 1]
-        filtered_df = new_df.groupby('Launch Site')['class'].count().reset_index(name='count')
-        # Total number of flights from the specified launch site
-        total_flights = new_df['Flight Number'].count()
-        # Calculate the proportion
-        filtered_df['proportion'] = filtered_df['count'] / total_flights
-        fig = px.pie(filtered_df, values='proportion', 
-        names='Launch Site', 
+        mask = (spacex_df['Payload Mass (kg)'] > low) & (spacex_df['Payload Mass (kg)'] < high)
+        fig = px.scatter(spacex_df[mask], x='Payload Mass (kg)', y='class', 
+        color="Booster Version", 
         title='Total Success Launch rate by Site')
         return fig
     else:
-        # Filter the DataFrame for the specific launch site
-        pie_data = spacex_df[spacex_df['Launch Site'] == entered_site]
-        # Count the occurrences of each class
-        class_counts = pie_data.groupby('class')['class'].count().reset_index(name='count')
-        # Total number of flights from the specified launch site
-        total_flights = pie_data['Flight Number'].count()
-        # Calculate the proportion
-        class_counts['proportion'] = class_counts['count'] / total_flights
-        
-        fig = px.pie(class_counts, values='proportion', 
-        names='class', 
-        title='Launches Success rate for site ' + entered_site)
+        filtered_df = spacex_df[spacex_df['Launch Site'] == entered_site]
+        mask = (filtered_df['Payload Mass (kg)'] > low) & (filtered_df['Payload Mass (kg)'] < high)
+        fig = px.scatter(filtered_df[mask], x='Payload Mass (kg)', y='class', 
+        color="Booster Version", 
+        title='Total Success Launch rate by Site' + entered_site)
         return fig
-
 
 # Run the app
 if __name__ == '__main__':
     app.run_server()
-
-
-
